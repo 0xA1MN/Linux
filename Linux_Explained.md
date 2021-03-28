@@ -89,68 +89,36 @@ Separating user and kernel space protects kernel processes.
 
 **Shortcuts**
 
-| Command| Action |
-
-|--|--|
-
-| ESC-dw | Deletes the word that comes immediately after the cursor, including the space following the word. |
-
-| ESC-d$ | Deletes from the insertion point to the end of the line. |
-
-| ESC-dd | Deletes the entire current line. |
-
-| ESC-p | Inserts deleted text before or below the current cursor location. |
-
-| ESC-P | Inserts deleted text after or above the current cursor location. |
-
-| ESC-u | Undoes the last action. |
-
-| ESC-U | Undoes all changes made on the current line. |
-
-| ESC-D | Deletes the rest of the current line from the cursor position. |
-
-| ESC-yy | Copies the line in which the cursor is located to the buffer. |
-
-| ESC-a | Appends after cursor. |
-
-| ESC-A | Appends after line. |
-
-| ESC-C | Changes to the end of the line. |
-
-| ESC-cc | Changes the whole line. |
-
-| ESC-ZZ | Saves the current file and ends vi. |
-
-| ESC-h | Moves the cursor left one character. |
-
-| ESC-j | Moves the cursor down one line. |
-
-| ESC-k | Moves the cursor up one line. |
-
-| ESC-l | Moves the cursor right one character. |
-
-| ESC-0 | Moves the cursor to the start of the current line. |
-
-| ESC-:w | Writes the current file to disk. |
-
-| ESC-:exit | Writes the current file to disk and then closes vi. |
-
-| ESC-:wq | Also writes the current file to disk and closes vi. |
-
-| ESC -:q | Closes vi without saving the current file. |
-
-| ESC-:q! | Closes vi without saving the current file, even if the file has been modified. |
-
-| ESC-:w! | Overwrites the current file. |
-
-| ESC-:e! | Forgets changes since the last write. |
-
-| CTRL-G | displays a status line at the bottom of the interface. |
-
+| Command          | Action                                                       |
+| :--------------: | ------------------------------------------------------------ |
+| ESC-dw           | Deletes the word that comes immediately after the cursor, including the space following the word. |
+| ESC-d$           | Deletes from the insertion point to the end of the line.     |
+| ESC-dd           | Deletes the entire current line.                             |
+| ESC-p            | Inserts deleted text before or below the current cursor location. |
+| ESC-P            | Inserts deleted text after or above the current cursor location. |
+| ESC-u            | Undoes the last action. |
+| ESC-U            | Undoes all changes made on the current line. |
+| ESC-D            | Deletes the rest of the current line from the cursor position. |
+| ESC-yy           | Copies the line in which the cursor is located to the buffer. |
+| ESC-a            | Appends after cursor. |
+| ESC-A            | Appends after line. |
+| ESC-C            | Changes to the end of the line. |
+| ESC-cc           | Changes the whole line. |
+| ESC-ZZ           | Saves the current file and ends vi. |
+| ESC-h            | Moves the cursor left one character. |
+| ESC-j            | Moves the cursor down one line. |
+| ESC-k            | Moves the cursor up one line. |
+| ESC-l            | Moves the cursor right one character. |
+| ESC-0            | Moves the cursor to the start of the current line. |
+| ESC-:w           | Writes the current file to disk. |
+| ESC-:exit        | Writes the current file to disk and then closes vi. |
+| ESC-:wq          | Also writes the current file to disk and closes vi. |
+| ESC -:q          | Closes vi without saving the current file. |
+| ESC-:q!          | Closes vi without saving the current file, even if the file has been modified. |
+| ESC-:w!          | Overwrites the current file. |
+| ESC-:e!          | Forgets changes since the last write. |
+| CTRL-G           | displays a status line at the bottom of the interface. |
 | /search [string] | searches from the current cursor position to the bottom of the document for the specified string. |
-
 | ?search [string] | searches from the current cursor position to the top of the document for the specified string. |  
-
-
 
 From within command mode, you can enter a colon (:) to switch to command-line mode.
