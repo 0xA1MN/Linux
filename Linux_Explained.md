@@ -214,3 +214,200 @@ place changes in memory, you must execute the commands in the configuration file
 
 The command `source [filename]` or  `[filename]` will execute the commands in a configuration file.
 The file ~/.bash_profile is only read when the user logs on. Changes to a user’s .bash_profile would not be read until the user’s next logon. The source command source ~/.bash_profile or . ~/.bash_profile would make those configuration changes available immediately.
+
+
+
+## Managing Linux Users and Groups
+
+Linux uses a method called Discretionary Access Control (DAC) to permit or restrict access to an object (resource) based on the user and group identities associated with the user accessing the resource and the
+permissions granted to that user ID or group ID by the resource.
+
+
+
+**# Understanding Linux Users and Groups**
+
+A user is a person or service that requires access to system resources. A user account is a method of providing or restricting access to system resources.
+
+- **User IDs** Linux implements user ID ranges to organize users.
+
+  - **User IDs 0–99** Administrative users 0–99 are added to the operating system during the installation process
+
+  - **root** The user root is a privileged Linux account. Privileged accounts are granted greater access and management capabilities over nonprivileged user accounts. The user root has access to all files and commands and full control of the operating system, including the ability to bypass the operating
+    system or application restrictions. Any user assigned the user ID 0 has root privileges.
+
+  - **System Account** System accounts are nonprivileged accounts created by a system administrator or application and assigned user IDs within the range specified by the variables SYS_UID_MIN and SYS_UID_MAX in /etc/login.defs.
+
+    *System accounts may be assigned to applications or services and are sometimes used to restrict access to configuration or data files. System accounts are not able to log on to the system, do not require a password, do not have password aging applied, and do not have home directories.*
+
+    A system account is created by executing the command `useradd -r [user_name]`. The command will automatically assign the new account a user ID in the range specified by SYS_UID_MIN and SYS_UID_MAX. It will also make the appropriate password and password aging entries in
+    /etc/shadow.
+
+  - **User Account** A user account provides nonprivileged access to system resources. User account ID ranges are specified by the variables UID_MIN and UID_MAX in /etc/login.defs.
+    A Linux service (an application that is running in the background, such as abrt) may be assigned a user account. The user account ID for a service will be in the range 0–99 or between the values set by SYS_UID_MIN and SYS_UID_MAX in /etc/login.defs.
+
+
+
+**# Where Linux User Account Information Is Stored**
+
+- **/etc/passwd** Contains user account in form a flat file database. Each line of the file contains a unique user record. Each record contains seven fields. A colon (:) is used as a delimiter (data boundary) to separate the fields.
+
+  `username:Password:UID:GID:commment:home_directory:default_shell`
+
+  - **User Name** The username is a unique word used to identify a user who has access to the system. The username is supplied by the administrator creating the account.
+  - **Password** When UNIX was first developed, the user’s password was stored in this field. Unfortunately the /etc/passwd file’s permissions allowed everyone to read the file, so it was easy to
+    hijack a user’s password. Passwords are now stored in the file /etc/shadow. When shadow passwords are not implemented, passwords are stored in /etc/passwd.
+  - **UID** The Linux kernel identifies a user by their user ID, not their username. A user ID is a numerical identifier assigned each user and mapped to their username. Each user ID should be unique. However, although it is not a secure practice, you can map multiple usernames
+    to the same user ID.
+  - **GID** The gid field contains the group ID number of the user’s primary group. When a user creates a file, their primary group ID is assigned as the file’s group owner.
+  - **Comment** By default, this field contains the user’s full name. You may change the information that appears in this field when adding or modifying the user account.
+  - **Home_Directory** This field contains the absolute path to the user’s home directory.
+  - **Default_Shell** Some accounts (system accounts) do not require a login shell. You will find these accounts have either /sbin/nologin or /bin/false in this field. Both prevent login. /bin/false immediately exits the login process. /sbin/nologin will display the message found
+    in /etc/nologin and exit the login process.
+
+- **/etc/shadow** Contains user password and password aging information
+
+  Shadow utilities were implemented to fix security issues. In order to accommodate the new shadow utilities, the files /etc/shadow and /etc/gshadow were added, along with the commands gpasswd, pwconv, pwunconv, pwck, and grpck. 
+
+  The /etc/shadow file is a flat file database which stores user password and password aging information. Each record in /etc/passwd should have a corresponding record in /etc/shadow. The format for a record in this file is as follows:
+
+  `Username:Password:last_modified:min_day:max_day:days_warn:disabled_day:expire	`
+
+  	- **Username** This is the user’s login name.
+
+  - **Password** This field stores the user’s password in encrypted format.
+
+    - If the account is a user account and this field only contains two exclamation points ( !! ), an account *password has never been assigned.*
+
+    - password start with `$6$` The characters between the first two dollar signs (6 in this example) indicate the *encryption algorithm* used to create the password. The default algorithm is assigned in /etc/login.defs.
+
+    - To prevent a user from logging on, you can *lock the account* using the commands
+
+       `passwd -l [user_name]` or `usermod -L [user_name]`. If the account has been locked by the command passwd -l, the password field will be prefaced by double exclamation marks ( !! )
+
+      If the password has been locked using the command `usermod -L`, the password field will be
+      prefaced by a single exclamation mark (!<encrypted_password>). You may also see this if the account has expired.
+
+    - If a user account has an asterisk (*) in the password field, *the account is disabled* (Figure 4-3). An account is automatically disabled if it has been x amount of days after the password expired. The default number of days is specified by the variable INACTIVE in /etc/default/useradd. The inactive days for a specific user may be set using the command `passwd -i [number_of_days]` or `chage -I [number_of_days]`. If a user account is disabled, you must remove the asterisk from the password field in /etc/shadow. User accounts in the ID range 1–99 that do not require a password will display an asterisk in this field.
+
+    - You can force a user to change their password when they log on next by expiring the account using the command `passwd -e [username]` or setting the last change date to 0 using the command `chage -d 0 [username]`.
+
+  - **last_modified** This field displays the number of days since January 1, 1970, that the password was last changed. This number is used to calculate password aging dates.
+    To change the last modified date for a user, execute the following command:
+    `chage -d [YYYY-MM-DD] [username]`
+
+  - **min_day** This field displays the minimum number of days required before a password can be changed. The default value is specified in /etc/login.defs.
+
+    To change the minimum number of days for a user, execute the command
+    `chage -m [number_of_days] [username]` or `passwd -n [number_of_days] [username]`
+
+  - **max_day**  This field displays the maximum number of days before
+    a password expires. The default value is specified in /etc/login.defs. 
+
+    To change the maximum number of days for a user, execute the command
+    `chage -M [number_of_days] [username]` or `passwd -x [number_of_days] [username]`
+
+  - **days_warn** This field displays the number of days prior to password expiration the user will be warned of the pending expiration. The default value is specified in /etc/login.defs.
+    To change the number of days before warning a user, execute the command
+    `chage -W [number_of_days] [username]` or `passwd -w [number_of_days] [username]`
+
+  - **disabled_day**  This field displays the number of days after password expiration the user account will be disabled. The purpose of this field is to prevent open accounts that are not being used.
+    During the period between password expiration and the number of inactive days being exceeded, the user may still log on but will be forced to change their password. After the number of inactive days is exceeded, the account is disabled and will require an administrator to remediate the situation.
+    The default inactive value is specified in /etc/default/useradd. If the value of this variable is set to 0, the account is disabled the same time the password expires. If the value of the variable is -1, the inactive function is disabled. If the variable is set to a value of n, the account will be disabled n days after the password expires.
+    To change the default value of the variable INACTIVE (/etc/default/useradd) execute the following command:
+    `useradd -Df [number_of_days]`
+    To change the inactive days for a user, execute the command
+    `chage -I [number_of_days] [username]` or `passwd -i [number_of_days] [username]`
+
+  - **expire**  This field displays the number of days since January 1, 1970, after which the account will be disabled. To change the account expiration date for a single user, execute the following command:
+    `chage -E [YYYY-MM-DD] [username]`
+
+- **/etc/group** Contains a list of groups and their members
+
+- **/etc/skel** A directory that contains files automatically copied to a user’s home directory when the user is created
+
+**pwconv and pwunconv**
+To verify /etc/passwd and /etc/shadow contain matching records, use the command pwconv. This command checks all user records in /etc/passwd and determines if there is a corresponding record in /etc/shadow. If a user record in /etc/shadow is required but does not exist, pwconv will create the record in /etc/shadow using default settings. Next, pwconv will compare the user records in /etc/shadow and determine if there is a corresponding record in /etc/passwd. If a record exists in /etc/shadow but a corresponding record does not exist in /etc/passwd, the record will be deleted in /etc/shadow.
+
+pwunconv will move all passwords stored in the second field of /etc/shadow into the second field of /etc/passwd and then remove the file /etc/shadow. This can be useful. The default aging dates defined in
+ etc/login.defs are not conducive to a secure environment. One of the problems is the password max days is too long, and a user may change their password back immediately after changing it (PASS_MIN_DAYS). Create better aging using the following settings:
+
+- MAX_DAYS 30
+- WARN_DAYS 7
+- MIN_DAYS 22
+
+Executing the command pwunconv will move all passwords stored in the second field of /etc/shadow into the second field of /etc/passwd and then remove the file /etc/shadow. Next, execute the command pwconv. This will rebuild /etc/shadow using the default values in /etc/login.defs.
+
+**# Real and Effective User and Group IDs**
+
+When a user logs on to a system, they are assigned the user ID stored in their /etc/passwd record. This user ID is called their real user ID, or RUID. Both the w and who commands will display the real user ID of a logged- on user, what process they are executing, and what device the process is executing from. An effective user ID (EUID) is the user ID that determines access to resources
+
+![](IMG/screen.png)
+
+When you log on, your real user ID and effective user ID are the same.
+*The su (substitute user) command allows a user to assume the privileges of another user by changing their effective user and group ID. Non-root users must know the password of the user they are changing to.*
+
+There are two formats for the su command: `su [username]` and `su -[username]`. 
+
+* The command `su [username]` will change the current user’s UID, primary group ID, and home directory. 
+
+* The command `su -[username]` will log in as the user. This will change the current user’s
+  UID, primary group ID, and home directory as well as read all of the user’s
+  configuration files. 
+
+
+
+The su - command is useful if you want to test a user problem using the user’s environment.
+Whenever you execute the su or su - commands your effective user id (EUID) and effective group ID (EGID) change. To view the current user’s effective user ID, execute the command whoami or id.
+The id command will display the current user’s effective user ID, effective group ID, and the user’s secondary groups. 
+
+The command *id [username]* will display the user ID, primary group ID, and secondary
+groups for the user specified by the argument [username].
+
+
+
+**# Creating and Managing User Accounts from the Command Line**
+
+- **useradd** The useradd utility is used to add users to the Linux system. The useradd command obtains default values from /etc/default/useradd and /etc/login.defs. The directory /etc/skel is used to populate the new user’s home directory.
+
+- **/etc/default/useradd** The directory /etc/default is used to specify default variable settings. The file /etc/default/useradd contains default variable used by the command useradd. To view the values set in /etc/default/useradd, execute the command `useradd -D`
+
+  You can change the value of most of the variables in /etc/default/useradd by executing the command useradd -Dx. for `useradd --help` for available options.
+
+- **GROUP** The GROUP variable defines the default group ID. There are several considerations to note:
+
+  - User Private Group (UPG) is a mechanism that creates a private group for each user when a user is created. The variable USERGROUPS_ENAB in /etc/login.defs controls the implementation of UPG. If this variable is set to yes, a user group with the same name as the user is created.
+
+    If the USERGROUPS_ENAB variable is set to no or the -n option is used `useradd -n [user_name]` the default group in /etc/default/useradd is the user’s primary group.
+
+    You may select a specific group for a user. Use the `-g` option followed by an existing group number or group name ex: `useradd -g 1001 student2`. The group must exist.
+
+- **HOME** The HOME variable stores the location of the base directory used when a new user is created. For example, if you were to create a new user student2 and the base directory is /home, the new user’s home directory would be /home/student2. The `useradd -d [directory]` command (ex: `useradd -d /home/fred fred` is used to specify the absolute path to the location of the user’s home directory.
+  To create the home directory, the variable CREATE_HOME in the file /etc/login.defs must be set to yes. To create the directory for a user via the command line, you must use the -m option
+
+  ex: `useradd -d /home/fred -m fred`.
+
+- **INACTIVE** Inactive days are the days a user has not logged on to the system. The purpose of the INACTIVE field is to prevent open accounts that are not being used from remaining open.
+  The INACTIVE variable sets the number of days after a password expires that the user account will be disabled. *If this variable is set to 0, the account is disabled when the password expires.* *If the value of the variable is -1, the inactive function is disabled.*
+  If the variable is set to a value of n, the account will be disabled n days after the password expires. If the number of days past password expiration is less than the value of n, the user may still log on but will be forced to change their password.
+
+  The account is disabled when the number of days specified by n is exceeded. A system administrator is required to remediate a disabled account. To change the default value, execute the command
+
+   `useradd -Df [number_of_days]`.
+
+- **SHELL** This field specifies the absolute path to the default logon shell. A list of available shells may be obtained by executing the command `cat /etc/shells or chsh -l`.
+  To change the default value, execute the command `useradd -Db [logon_shell]`.
+
+- **SKEL** The SKEL variable defines the skeleton directory. This directory contains all the files that will be copied to a user’s home directory when a user is created.
+  To change the default value of the variable SKEL in /etc/default/useradd, execute the command `useradd -Dk [directory_name].` 
+
+- **CREATE_MAIL_SPOOL** The file /etc/login.defs defines the location of a user’s mailbox. The variable CREATE_MAIL_SPOOL determines whether the user’s mail file or directory will be created when the user is created.
+  *To change this variable you must edit /etc/default/useradd.*
+
+
+
+
+
+
+
+
+
