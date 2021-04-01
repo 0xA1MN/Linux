@@ -405,9 +405,145 @@ groups for the user specified by the argument [username].
 
 
 
+**# /etc/login.defs**
+
+The settings in the file /etc/login.defs are used when a user is created
+
+- **Location of User Mail**  The following entries specify where the user’s mail will be stored. In example
+
+  `MAIL_DIR								/var/spool/mail`
+
+   notice the uncommented line that begins with MAIL_DIR. This indicates the user’s mail will be located in the directory /var/spool/mail. The value of the variable CREATE_MAIL_SPOOL in /etc/default/useradd will determine if the file will be created when the user is added.
+
+- **User ID Ranges:**
+  The next entries specify a range of user IDs and group IDs
+
+  ![](IMG/ids.png)
+
+* **USERDEL_CMD** This is the command executed when deleting a user.
+  Notice this line is commented out.
+
+  `USERDEL_CMD							/usr/sbin/userdel_local`
+
+  
+
+  **CREATE_HOME** The CREATE_HOME directory determines if a user’s
+  home directory will be created when a user is added.
+
+  `CREATE_HOME								yes`
+
+  **UMASK** The UMASK variable assigns the umask value that will be applied when creating the user’s home directory. A value of 077 will create a home directory with the permission 700.
+
+  `UNMASK									077`
+
+  This entry turns on Universal Private Group:
+
+  `USERGROUPS_ENAB							yes`
+
+  If *USERGROUPS_ENAB* is no, the -U option will create a group with the same name as the user name.
+  This entry sets the password encryption method:
+
+  `ENCRYPT_METHOD							SHA512`
 
 
 
+**# /etc/skel**
+The /etc/skel directory is the default directory that contains the files and directories copied to a new user’s home directory. You may modify the files in this directory if you want all new users to have specific files or settings.
+
+You may also create skeleton directory for users with similar needs. Let us assume you have a specific group that requires specific settings in ~/.bash_profile and ~/.bashr, and have certain scripts available. Create a directory named /etc/skel [group_name]. Next copy all the files in /etc/skel to that directory and edit the appropriate configuration files or add any additional files you want in the group’s home directory.
+When adding a user for that group, use the option -k <skel_directory>
+(for example, useradd -k /etc/skel [group_name] [user_name]).
 
 
+
+**# useradd Options**
+
+- -c User comment field. Place the comments between double quotes (for example, -c “Computer Lab”). Make certain your comment does not contain any personal information.
+- -e Specifies the date when the user account will be disabled (*-e YYYY-MM-DD*).
+- -f Inactive. Specifies the number of days to wait after password expiration before disabling the account.
+- -g Specifies the user’s primary group
+- -n Override the USERGROUP_ENAB variable in /etc/login.defs and use the default group specified in the variable group in the file /etc/default/useradd.
+- -G Specifies additional groups (secondary groups) that the user is to be made a member of. You may enter a comma-delimited list of group names or group IDs.
+- -d Defines the location of the home directory. The default home directory is a sub directory of the base home directory specified by the variable HOME in /etc/default/useradd. If the variable HOME is
+  equal to /home and the new user is equal to student2, the default home directory for user student2 would be /home/student2. Use the -d [absolute_path_to_home_directory] command to specify a different location for a user’s home directory.
+- -m Create (make) the home directory. This option is not necessary if the variable CREATE_HOME in /etc/login.defs is yes.
+- -r Specifies that the user being created is a system user. The system user ID will be in the range specified by SYS_UID_MIN and SYS_UID_MAX in /etc/login.def. A user created with the -r option will not be able to log on, have a home directory, or have any password aging settings.
+- -s Specifies the absolute path to the default shell for the user.
+- -u The useradd command will automatically assign a user ID. The -u option allows an administrator to manually specify a user ID. If the user already exists you will receive an error message.
+  Any required settings not specified on the command line are supplied by /etc/login.defs and /etc/default/useradd.
+
+
+
+**# passwd** 
+
+Password construction is managed by PAM (/etc/pam.d/passwd ).
+
+While entering the new password, nothing will appear on the terminal.
+
+A system administrator may change a user’s password by executing the command passwd [username]. Other passwd options that may be used by the system administrator include the following:
+
+- -l This option locks the user account but does not remove the current password. The encrypted password of an account locked using passwd -l will have two exclamation points (!!) preceding the
+  password.
+- -u Unlocks a user’s account.
+- -d Removes a user’s password. This leaves the user account open, which is not recommended.
+- -n Sets the minimum number of days (MIN_DAYS) required before a password can be changed.
+- -x Sets the maximum number of days (MAX_DAYS) before a password must be changed.
+- -w Sets the number of days prior to password expiration (WARN_DAYS) when the user will be warned of the pending expiration.
+- -i Sets the number of inactive days to wait after a password has expired before disabling the account.
+- -S Displays password aging information. Password aging information may also be displayed by executing the `chage -l [username]` command.
+
+
+
+**# chage** 
+
+The chage (change aging) command allows you to view or change a user’s password aging information.
+The command `chage -l` will display the current *user’s aging information*.
+As a system administrator, the command *chage -l [username]* will display password aging for a specific user. This is a beneficial troubleshooting tool if a user cannot logon.
+Let’s look at some other system administrator chage options:
+
+- -d YYYY-MM-DD Changes a user’s last change date.
+
+- -m Sets the minimum number of days (MIN_DAYS) required before a password can be changed.
+
+- -M Sets the maximum number of days (MAX_DAYS) before a password must be changed.
+
+- -W Sets the number of days prior to password expiration (WARN_DAYS) when the user will be warned of the pending expiration.
+
+- -I Sets inactive (the number of days to wait after a password has expired to disable the account).
+
+- -E YYYY-MM-DD Sets the account expiration date.
+
+  
+
+  A system administrator may also use the command `chage [username]` to change a user’s password aging information. This command opens a text- based user interface (TUI) that will step through each aging parameter, display the current value, and allow the value to be changed 
+
+
+
+**# usermod** 
+
+The usermod command is used to modify an existing user account. The options for usermod are likewise similar to those used by useradd, with a few noted changes:
+
+- `-G [group_name |group_id]` This option removes all of the user’s current secondary groups and replaces them with the group or comma-delimited list of groups.
+
+- `-aG [group_name |group_id]` To avoid overwriting existing secondary, groups preface the -G with -a (append).
+
+- -l Changes the username (logon name).
+  Once you change the username, you must change the location of the home directory and create the home directory.
+
+  -  -d Location of the user’s home directory.
+    Suppose you are modifying the username of student2 to user2. You want user2’s home directory to be /home/user2. You must specify the location of the new home directory by using the option -d /home/user2.
+  -  -m This option moves (renames) the current user’s home directory to the new user’s name.
+    If you view the inode number of the home directories before and after the username is modified, you will see the inode numbers are the same.
+
+  
+
+  The following command will rename user student2 to user2: usermod -l
+  user2 -d /home/user2 -m student2.
+
+
+
+**# userdel** 
+
+The userdel command is used to remove a user account. The command *userdel [username]* will only remove a user’s record from /etc/passwd and /etc/shadow.
+To remove the user’s home directory, cron jobs, at jobs, and mail, execute the command `userdel -r <username>`.
 
