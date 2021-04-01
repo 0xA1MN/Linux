@@ -456,7 +456,9 @@ When adding a user for that group, use the option -k <skel_directory>
 
 
 
-**# useradd Options**
+**# linux commands for managing users and groups**
+
+**useradd Options**
 
 - -c User comment field. Place the comments between double quotes (for example, -c “Computer Lab”). Make certain your comment does not contain any personal information.
 - -e Specifies the date when the user account will be disabled (*-e YYYY-MM-DD*).
@@ -474,7 +476,7 @@ When adding a user for that group, use the option -k <skel_directory>
 
 
 
-**# passwd** 
+**passwd** 
 
 Password construction is managed by PAM (/etc/pam.d/passwd ).
 
@@ -494,7 +496,7 @@ A system administrator may change a user’s password by executing the command p
 
 
 
-**# chage** 
+**chage** 
 
 The chage (change aging) command allows you to view or change a user’s password aging information.
 The command `chage -l` will display the current *user’s aging information*.
@@ -519,7 +521,7 @@ Let’s look at some other system administrator chage options:
 
 
 
-**# usermod** 
+**usermod** 
 
 The usermod command is used to modify an existing user account. The options for usermod are likewise similar to those used by useradd, with a few noted changes:
 
@@ -542,8 +544,54 @@ The usermod command is used to modify an existing user account. The options for 
 
 
 
-**# userdel** 
+**userdel** 
 
 The userdel command is used to remove a user account. The command *userdel [username]* will only remove a user’s record from /etc/passwd and /etc/shadow.
 To remove the user’s home directory, cron jobs, at jobs, and mail, execute the command `userdel -r <username>`.
 
+
+
+**# Linux Groups**
+
+Assume you have a resource that all of the company’s tech writers need to access. By creating a group called tech_writers and making tech_writers the group owner of the resource, you can assign the necessary access permissions to the resource for the group.
+Group information is stored in the /etc/group and /etc/gshadow files. The gshadow file is part of shadow utilities.
+
+The /etc/group file is a flat-file database that contains four fields:
+
+`Group:Password:GID:Users`
+
+- **Group** Specifies the name of the group. In the example, the name of the group is “video.”
+- Password Specifies the group password, if shadow passwording is not enabled and one is assigned. If shadow passwording is enabled, the group password would be stored in /etc/gshadow.
+- **GID** Specifies the group ID (GID) number of the group.
+- **Users** Lists the members who are secondary members of the group.
+  Some distributions use an additional group file to store group passwords.
+
+*If shadow passwording is enabled*, the file /etc/gshadow will contain the group password and contain an additional field for storing group administrators, as shown next. A group administrator may add or remove
+users from the group, change the group password, remove the group password, and enable or disable the `newgrp` command for that group.
+
+`Group_Name:Password:Group_Admins:Group_Members`
+
+
+
+**# Managing Groups from the Command Line**
+
+- **groupadd** As you can probably guess from its name, the groupadd utility is used to add groups to your Linux system. The syntax for using groupadd at the shell prompt is relatively simple. Just enter groupadd options groupname. For example, if you wanted to add a group named dbusers, you
+  would enter groupadd dbusers at the shell prompt.
+  When using groupadd, you can use the following options:
+
+    *	-g Specifies a GID for the new group. As with users, it is not necessary to specify a group ID, as the system will automatically assign one.
+
+   * -r Specifies that the group being created is a system group.
+
+* **gpasswd** The gpasswd command is used to manage the files /etc/group and /etc/gshadow. This command may be executed by a system administrator or a group administrator.
+  To assign a group administrator, a system administrator or group administrator should execute the `gpasswd -A [username]` command.
+  A system or group administrator may use any of the following gpasswd options:
+  * -a [username] Add a user to the group.
+  * -d [username] Delete a user from the group.
+  * -r Remove the group password.
+
+* **groupmod** The groupmod command is used to modify group information using the following options:
+  * -g Change the group’s GID number.
+  * -n Change the group name.
+
+* **groupdel** If, for some reason, you need to delete an existing group from the system, you can do so using the groupdel command at the shell prompt.
