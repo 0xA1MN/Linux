@@ -595,3 +595,371 @@ users from the group, change the group password, remove the group password, and 
   * -n Change the group name.
 
 * **groupdel** If, for some reason, you need to delete an existing group from the system, you can do so using the groupdel command at the shell prompt.
+
+
+
+
+
+## Managing Linux Files and Directories
+**# The Filesystem Hierarchy Standard (FHS)**
+
+filesystem controls how data is managed on a hard disk. one hard disk with many partitions. Each partition has a filesystem on which data is stored. What data is stored in on a disk or partition and what filesystems are used to manage the data are determined as part of the system design process.
+
+
+
+**Linux Directories :**
+
+![](IMG/partitions.png)
+
+**/bin** This directory is linked to /usr/bin. /usr/bin contains user commands.
+
+**/boot** This directory contains files required to boot your system.
+
+**/dev** This directory contains special files used to represent the various hardware devices installed in the system.
+
+**/etc** This directory contains global configuration files.
+
+**/lib** This directory contains system library files. Kernel modules are stored in /lib/modules.
+
+**/mnt** This directory is intended to be a temporary mount point.
+
+**/media** This directory is intended to contain subdirectories used as mount points for removable media.
+
+**/opt** This directory is the suggested location for third-party applications.
+
+**/sbin** This directory contains system binaries used by root or other system administrators for booting, restoring, or repairing the operating system.
+
+**/tmp** This directory contains temporary files created by user applications.
+
+**/usr** This directory contains user system files.
+
+**/var** This directory contains variable data, including your system log files.
+
+**/home** This directory contains home directories for user accounts.
+
+**/root** This is the user root’s home directory.
+
+**/run** The /run directory contains system information gathered from boot time forward. This directory is cleared at the start of the boot process.
+
+**/srv** This directory contains data for services (HTTP and FTP) running on the server.
+
+**/sys** This directory provides device, driver, and some kernel information.
+
+**/proc**  is a dynamic memory-based directory that contains process and other system (CPU, DMA, and IRQ) information. When viewing /proc, you will see a number of directories identified by a number rather than a name, These numbers correspond to the process ID (PID) of running processes. The /proc directory contain statistics for these processes.
+
+You will also see a list of files, and these files also contain statistical information. Some of the files contain a list of available filesystems, loaded kernel modules, and mounted partitions. /proc also contains a special directory called /sys. This directory contains a list of kernel operating parameters. An administrator can
+temporarily change these settings for testing purposes.
+
+
+
+**# Navigating the Filesystem**
+
+- pwd (print working directory) : command displays the absolute path of the current directory on the terminal.
+-  cd (change directory) : change from your current working directory to another directory.
+- ls (list) : list directory content
+  - -a (all) display all files "shown/hidden"
+  - -l (long) display file’s name and properties. You can use it to see the filenames, ownership, permissions, modification dates, and sizes.
+  - -R (Recursive) displays directory contents recursively; that is, it displays the contents of the current directory as well as the contents of all subdirectories. Depending on the number of entries in the directory, you may want to append | more after using this option. This will cause the more utility to pause and display one page at a time.
+
+
+
+**# Managing Linux Files**
+
+Everything in Linux is referenced by a file. Even a directory is a file. We will now investigate the types of Linux files and how to manage them. Linux files consist of a filename, inode, and data block(s). Figure shows an example of an ASCII file. When a file is created, it is given a name by the user or application and assigned a unique inode number (index number) by the filesystem. The operating system uses the inode number, not the filename, to access the file and its information.
+
+![](IMG/linux_files.png)
+
+**# Filenames**
+A file is container that stores data. Each file has a filename. A Linux filename may contain up to 255 characters, but must not contain a space, forward slash, or null character. A filename may contain metacharacters (file1*), but this is not advisable.
+The Linux operating system does not use extensions (for example, mfc70.dll) to indicate the type of file. Each file (except plain text files) contains a signature called a magic number. This magic number indicates the type of file.
+
+*note : Linux identifies file types through a system called MIME. Mime is extra data that is added to the file in a way so that even without the right extension the system can work out from the start of the file what type of file it is.*
+
+`file --mime-type [file_name]`
+
+Linux requires the application accessing a file to understand what to do with the data in the file. That said, some applications will apply their own suffix to their files.
+By default, LibreOffice stores files using Open Document Format and uses Open Document filenames to distinguish its files. For example, the suffix .odt indicates a text file, .ods a spreadsheet, and .odp a presentation document.
+You can apply multiple suffixes on a filenames to make searching for files easier. The filename fstab.12232019.abc could indicate that this is a copy of the file /etc/fstab made on December 23, 2019, by a user with the initials abc.
+To make your life easier if you are sharing files among multiple operating systems, make certain your filenames follow the rules for all operating systems. For example, if you create the files version1.txt and Version1.txt on a Linux system in the same directory, Linux will treat them as separate files. If you want the content of those two files shared with a Windows system, however, you might run into issues because Windows is not case-sensitive.
+
+
+
+**# Types of Files Used by Linux**
+
+![](IMG/file_type.png)
+
+
+
+**# Symbolic and Hard Links**
+
+A link is a method of referring to data stored in another file. This allows us to change the data in one file (original) and have that change reflected in all files that reference the original file.
+
+A file’s metadata is stored in an inode (index node). This data structure contains a file’s ownership, permissions, timestamp, and data block information. When a file is created, it is assigned an inode number from a list of available inode numbers in the filesystem. When a user enters a filename, the operating system looks for the inode number associated with that filename. Access to the file is based on the information stored in the file’s inode.
+
+For our discussion, we will use the term source to indicate the original file and the term target to indicate the file we are creating.
+
+- **Hard Link**
+  A hard link is an entry in the data block of a directory that associates the file’s name with the file’s inode
+
+  ![](IMG/hard_node.png)
+
+We can create additional hard links to existing files within the same filesystem. Figure 5-8 shows the relationship between the filename inode and data block of two files sharing a common inode.
+
+![](IMG/hard_node1.png)
+
+To create a hard link, we execute the command `ln [source_file] [target_file]`. In next Figure, we create the file hardlink1 (touch hardlink1). 
+
+The `ls -il hardlink1` command will display the inode and other properties of the file hardlink1. 
+
+Notice the circled number. This indicates the number of files sharing this file’s inode number.
+
+![](IMG/hard_node2.png)
+
+The second command, `ln hardlink1 hardlink2`, creates a hard link between files hardlink1 and hardlink2. Notice the output of the command `ls -il hardlink[12]`. Both filenames are associated with the same inode (1077977). Since the inode contains a pointer to the file’s data, when either file is accessed, the same data will be displayed. Also notice how many files now share the inode number 1077977.
+
+In the last command, we remove the file hardlink1 using the command `\rm hardlink1`. The file hardlink2 can still access its data because its filename is still associated with inode 1077977. You may also use the unlink command (`unlink hardlink1`). Remember, no disk space is recovered until the number of files sharing the inode’s number becomes 0 (zero).
+
+
+
+- **Symbolic Link**
+  A symbolic link (also called a soft link) references a file in the same or another filesystem. Unlike the hard link, each symbolic link file has its own inode, but the data block of the file contains the path to the file it is linked to .
+
+  ![](IMG/soft_node.png)
+
+In next Figure , notice a source file called symlink1 that is populated with the text “this is a symbolic link source file.”
+
+![](IMG/soft_node1.png)
+
+We then create two symbolic links, symlink2 and symlink3, using the command `ln -s [source_file] [target_file]`. Notice the output of the `ls -il` command. Each file has its own inode.
+
+Look at the output of the command `ls -il symlink[1-3]`. Remember symlink1 is our source file and symlink2 and symlink3 are the symbolic links.
+
+Notice the file type and properties of symlink2 and symlink3. The lowercase l indicates the file is a symbolic link, and the permissions rwxrwxrwx grant all permissions to all users when accessing the file. Also notice the filename has an arrow pointing to the file it is linked to. Permissions to a symbolic link are based on the file it is linked to. Look at the output of the command `ls -ilL symlink[1-3]`. The `-L` option references
+the permissions on the source file. The actual permissions granted a user accessing symlink2 and symlink3 are rw-r--r--.
+
+You can also use readlink (readlink symlink2) to determine what file asymbolic link is linked to.
+
+In next Figure , we see that symlink1 is an ASCII text file and that symlink2 and symlink3 are symbolic links linked to symlink1.
+
+![](IMG/soft_node2.png)
+
+You can remove a symbolic link by executing the command rm[target_link_file_name] or unlink [target_link_file_name].
+
+Removing symlink3 with the command `\rm symlink3` (or `unlink symlink3`) has no effect other than the loss of the symbolic link. When we remove the source file, symlink1, by executing the command \rm symlink1, however, the path to the link stored in file symlink2’s data block no longer exists, so the file is not found.
+
+*Hard links point to a number; soft links point to a name.*
+
+
+
+**# Creating New Directories**
+
+The mkdir (make directory) command is used to create a directory.
+
+You may use an absolute or relative path to create a directory somewhere other than the current directory. For example, if you wanted to create a new directory named backup in the /tmp directory, you would enter `mkdir /tmp/backup` at the shell prompt.
+
+The `mkdir -p` command creates a directory tree. The command *mkdir - p ~/temp/backups/daily* creates the temp directory, then creates the subdirectory backup, and finally creates the subdirectory daily.
+
+
+
+**# Determining the File Content**
+
+The first character of the output of the ls -l command is a code that indicates the file type
+
+![](IMG/content_type.png)
+
+When most files are created, the first several bytes of the file contain the file signature (also called the magic numbers), which indicates content stored in the file.
+The file command compares the file’s magic numbers with databases of file signatures contained in /usr/share/misc/magic, /usr/share/misc/magic.mgc, and /etc/magic to determine the file type.
+
+`file [file_name]` the file command provides a description of the content of the file.
+
+
+
+**# Viewing File Contents**
+
+- **cat** : display the specified text file onscreen.
+
+- **less** : The less command is called a pager. It may be used to manage how text is displayed and how the cursor is moved with a file. The less command automatically pauses a long text file one page at a time. You can use the SPACEBAR, PAGE UP, PAGE DOWN, and ARROW keys to navigate around the output.
+
+- **head** :  By default, the head command displays the first 10 lines of a file. The command `head -n` will display the first n number of lines of a file.
+
+- **tail** :  The tail command is used to display the last 10 of lines of a text file onscreen. The command tail -n will display the last n lines of a file. The tail command is particularly useful when displaying a log
+  file onscreen
+
+  The tail command also includes the -f option, As new content is
+  added to the end of the file, the new lines will be displayed onscreen. `tail -f  [file_name]`.
+
+  
+
+**# Delete - Copy - Move**
+
+`rm [file_name] ` have options `-r` ` -f` , ...
+
+`cp [file_name] [target]`
+
+`mv [file_name] [target]`
+
+
+
+**# Finding Files in the Linux Filesystem**
+
+- **find** :  `find [root_directory] [expression]` 
+
+  ![](IMG/find.png)
+
+  The size expression will search for a file based on its size. The size of the file may be specified as follows:
+
+  - b Blocks (512-byte block)
+
+  - c Bytes
+  -  w Word (2 bytes)
+  -  k Kilobytes
+  -  M Megabytes
+  -  G Gigabytes	
+
+  The command `find -size 5M` will find files that are exactly 5MB. The command find -size +5M will find files larger than 5MB. You may also use the command `find -size +5M -size -10M` to find a file that is smaller than 10MB but greater than 5MB.
+  You can combine expressions using Boolean operators:
+
+  - -a  ,  `<space>`   and
+  - -o   or
+  -  -not , !   not 
+
+  ex :
+
+  `find -name test -user student1` 
+
+  `find -name test -a -user student1` '
+
+  `find -name test -o -user student1`
+
+  ``find -name test ! -user student1`
+
+  
+
+  You may also execute a command on the results of the find command. The two expressions -exec and -ok take the standard output from the find expression and make it the standard input to the specified command. When find executes a command, it disregards any defined aliases.
+
+  - -exec Executes the command to the right without asking for confirmation
+  - -ok Executes the command to the right, but requires user confirmation
+
+  ex :
+
+  `find /var/log -name "*.log -exec ls l {}`
+
+  ` find /var/log -name "*.log -ok ls l {} `
+
+  *NOTE The curly braces ({ }) are used as a placeholder for the standard output of the find command. This standard output becomes the standard input of the command executed by -exec or -ok.*
+
+- **xargs**
+
+  xargs is used to read whitespace-delimited input and execute a command on each input. A whitespace delimiter is a nonprintable character that takes up space. Examples of whitespace characters are [space], [tab], [new_line].
+
+  In the example shown in Figure we take the space-delimited output of the echo command and use it to create files. Remember, the pipe takes the standard output of the command on the left and makes it the standard input of the command on the right. By default, the unnamed pipe cannot process multiple arguments. 
+
+  ![](IMG/xargs.png)
+
+  The pipe passes this output to xargs, and xargs passes one whitespace- delimited argument to the touch command at a time as input.
+
+  we expand our usage of the xargs command. The -I option in the command is a string replacement option, and the curly braces are a placeholder for the standard input.
+
+  ![](IMG/xargs1.png)
+
+  The output of the command ls file* will provide the whitespace- delimited arguments filea, fileb, and filec to xargs. The xargs command will place the current argument in the placeholder (-I {}). It will then execute the mv command to rename the current filename to test.[filename]. In our example, when xargs processes the argument filea, it will execute the command `mv filea test.filea`.
+
+  xargs is normally used with the find command. In the example shown in Figure , we use the xargs command to remove a list of commands.
+
+  ![](IMG/xargs2.png)
+
+- **locate** : The locate command finds files by looking for the filename in a database.
+  The database (by default, /var/lib/mlocate/mlocate.db) is updated each day via the mlocate anacron job found in the directory /etc/cron.daily. The output of the locate command is an absolute path to the file.
+
+- **whereis** : The whereis command displays the location of the source code, binary files, and manual pages associated with a keyword. 
+
+  - The -b option returns the location of the binaries for the specified command.
+  - The -m option returns the location of man pages associated with a keyword. To see the location of the command’s source code
+  - The -s option with the whereis command. If no option is used, all information is returned.
+
+  
+
+**# Understanding Commands and Precedence**
+
+Linux contains four types of commands:
+
+- **Alias** :  set alias `[alias_name]='[command]'`  `unalias [alias_name]`
+
+  NOTE alias by default created in memory if we wanna to made it permanent we must add it to `~/.bachrc` to  remove it permanent delete from `~/.bachrc`
+
+  IF we wanna to ignore alias add `\` before command
+
+- **Function** : To create a bash function on the command line, type the function name followed by opening and closing parentheses. Enclose the function commands between left and right curly braces and then complete the function by using the key sequence CTRL-D. This sequence will save the function to memory and exit the process creating the function. You can view this procedure
+
+  To view all functions loaded into memory, use the `typeset -f` or `declare - f` command. 
+
+  To remove a function from memory type the command `unset [function_name]`.
+
+  like alias to keep it for permanent must add it to `~/.bachrc`
+
+  ex : 
+
+  ```bash
+  lamp() {
+  	sudo systemctl "$1" mysqld
+      sudo systemctl "$1" httpd 
+  }
+  ```
+
+  
+
+- **Builtin**
+
+  Builtin commands are commands that are built in to the shell and execute as part of the shell process rather than spawning a child. To see a list of bash builtin commands, execute the command  `enable`.
+
+  In some cases, a keyword will represent multiple command types. For example, the keyword pwd is both a builtin and external command. In this situation, you would have to execute the command /usr/bin/pwd for the external command to execute or create an alias since aliases have precedence over builtin commands.
+  If an alias or function exists with the same name as the builtin, the command `builtin <builtin_command_name>` or `'<builtin_command_name>'` will force a builtin command to run. To receive help for builtin commands execute the command `help <builtin_command_name>`.
+
+- **External** External commands are file-based commands. Once the shell has looked through the aliases, functions, and builtin commands, it will use the variable `$PATH` to determine where to search for commands .
+
+  The shell looks through each directory in the PATH variable in the order in which it has been presented until it finds the command.
+
+  
+
+- **Hashed Commands** : `hash` print the absolute path to the command is stored in a hash table
+
+- **type** : The Type command is used to find out the information about a Linux command
+
+- **which** : The `which -a [keyword]` command will list aliases and external commands associated with a keyword in order of precedence. The command `which [keyword] ` will display (based on precedence) whether an alias or external command will be executed.
+
+
+
+**# Finding Content within Files**
+
+- **grep** : The grep utility may be used to search for specific content within a file . The command `grep [option] [string]` may be used to search for a string in a file. 
+
+  For example, the command `grep student1 /etc/passwd` will search for the string “student1” in the file /etc/passwd. If the string is found, by default, grep will print the line the string is on.
+
+  The command `grep student1 /etc/passwd /etc/shadow /etc/group`  will search for the string “student1” in /etc/passwd, /etc/shadow, and /etc/group
+
+  options : 
+
+  - `-i` Ignores case when searching for the text
+  - `-l` Only displays the filename in which a string occurs when searching across multiple files for a string
+  - `-n` Displays matching line numbers
+  - `-r` Searches recursively through subdirectories of the path specified
+  - `-v` Displays all lines that do not contain the search string
+
+  regular expressions :
+
+  ![](IMG/re.png)
+
+  ![](IMG/re1.png)
+
+  
+
+- **egrep**
+
+  egrep extends the capabilities of the grep command. The egrep command has been deprecated but is still functional. The replacement command is `grep -E`.
+
+  ![](IMG/re2.png)
+
+  
+
+- **fgrep**  : The fgrep (Fixed Regular Expression Print) command interprets all characters based on their encoded value. Therefore, when fgrep sees the string r*, it sees the asterisk based on its encoded value rather than a metacharacter (no backslash necessary).
+  The fgrep command has been deprecated but is still functional. The replacement command is `grep -F`.
